@@ -1,0 +1,6 @@
+{
+    "require": {
+        "thenetworg/oauth2-azure": "^2.2",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
