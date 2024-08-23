@@ -47,9 +47,9 @@ try {
     echo "Início: " . $createdEvent['start']['dateTime'] . "\n";
     echo "Término: " . $createdEvent['end']['dateTime'] . "\n";
 
-    // Salva todos os dados do evento no arquivo ms-calendar-create-event.json
-    file_put_contents('ms-calendar-create-event.json', json_encode($createdEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    echo "Dados do evento criado salvos em 'ms-calendar-create-event.json'.\n";
+    // Salva todos os dados do evento no arquivo ms-calendar-event-create.json
+    file_put_contents('ms-calendar-event-create.json', json_encode($createdEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    echo "Dados do evento criado salvos em 'ms-calendar-event-create.json'.\n";
 
 } catch (\Exception $e) {
     echo "Erro ao criar o evento: " . $e->getMessage() . "\n";

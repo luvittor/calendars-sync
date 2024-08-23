@@ -2,8 +2,8 @@
 require 'vendor/autoload.php';
 require 'ms-client-handler.php';
 
-// Verifica se o arquivo ms-calendar-create-event.json existe
-$jsonFile = 'ms-calendar-create-event.json';
+// Verifica se o arquivo ms-calendar-event-create.json existe
+$jsonFile = 'ms-calendar-event-create.json';
 if (!file_exists($jsonFile)) {
     echo "Arquivo $jsonFile não encontrado. Certifique-se de que o evento foi criado.\n";
     exit(1);

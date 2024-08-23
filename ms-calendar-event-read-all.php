@@ -22,12 +22,12 @@ do {
 
 } while ($url); // Continua até não haver mais uma próxima página
 
-// Salva todos os eventos no arquivo ms-calendar.json formatado para visualização
-file_put_contents('ms-calendar-read-all.json', json_encode($allEvents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+// Salva todos os eventos no arquivo ms-calendar-event-read-all.json formatado para visualização
+file_put_contents('ms-calendar-event-read-all.json', json_encode($allEvents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
 // Exibe uma mensagem de sucesso
 echo "Total de eventos salvos: " . count($allEvents) . "\n";
-echo "Os eventos foram salvos no arquivo 'ms-calendar.json'.\n";
+echo "Os eventos foram salvos no arquivo 'ms-calendar-event-read-all.json'.\n";
 
 // Exibe todos os eventos
 // echo "\n";
