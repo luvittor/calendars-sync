@@ -1,6 +1,8 @@
 <?php
-// Carrega o autoloader do Composer para usar as bibliotecas instaladas
 require 'vendor/autoload.php';
+
+use Firebase\JWT\JWT;
+use GuzzleHttp\Client;
 
 // Carrega as variáveis do arquivo .env
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -9,17 +11,37 @@ $dotenv->load();
 // Configuração dos parâmetros necessários
 $clientId = $_ENV['CLIENT_ID'];
 $tenantId = $_ENV['TENANT_ID'];
+$audience = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token";
 $scopes = $_ENV['SCOPES'];
-$clientSecret = $_ENV['CLIENT_SECRET'];
+
+// Carrega a chave privada para assinar o JWT
+$privateKey = file_get_contents('cert/private_key.pem');
+
+// Gera o JWT (client_assertion) assinado
+$now = time();
+$exp = $now + 3600; // Token válido por 1 hora
+
+$token = [
+    'aud' => $audience,
+    'iss' => $clientId,
+    'sub' => $clientId,
+    'jti' => bin2hex(random_bytes(16)),
+    'nbf' => $now,
+    'exp' => $exp,
+];
+
+$clientAssertion = JWT::encode($token, $privateKey, 'RS256');
+
+echo "Client Assertion gerado com sucesso: $clientAssertion.\n";
 
 // URL do endpoint para solicitar o código do dispositivo
 $deviceCodeEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode";
 // URL do endpoint para obter o token de acesso
-$tokenEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token";
+$tokenEndpoint = $audience;
 
 // Solicita o código do dispositivo
 echo "Solicitando o código do dispositivo...\n";
-$client = new \GuzzleHttp\Client();
+$client = new Client();
 
 try {
     $response = $client->post($deviceCodeEndpoint, [
@@ -53,7 +75,8 @@ do {
         $tokenResponse = $client->post($tokenEndpoint, [
             'form_params' => [
                 'client_id' => $clientId,
-                'client_secret' => $clientSecret,
+                'client_assertion' => $clientAssertion,
+                'client_assertion_type' => 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
                 'grant_type' => 'urn:ietf:params:oauth:grant-type:device_code',
                 'device_code' => $deviceCodeResponse['device_code'],
             ],
