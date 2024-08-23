@@ -1,5 +1,4 @@
 vendor
 .env
-credenciais.txt
-cert/*
-token.json
+ms-cert/*
+ms-token.json

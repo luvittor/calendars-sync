@@ -1,38 +1,9 @@
 <?php
 require 'vendor/autoload.php';
-use GuzzleHttp\Client;
+require 'ms-client-handler.php';
 
-// Verifica se o token está disponível e ainda é válido
-$tokenFile = 'token.json';
-$tokenIsValid = false;
-
-if (file_exists($tokenFile)) {
-    $tokenData = json_decode(file_get_contents($tokenFile), true);
-    
-    // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
-    if (isset($tokenData['expires_in'])) {
-        $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o token.json foi modificado/criado
-        $currentTime = time();
-        $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
-    }
-}
-
-if (!$tokenIsValid) {
-    // Token expirado ou inexistente, chamar ms-auth.php para obter um novo token
-    require 'ms-auth.php';
-    $tokenData = json_decode(file_get_contents($tokenFile), true);
-}
-
-$accessToken = $tokenData['access_token'];
-
-// Configuração do cliente HTTP
-$client = new Client([
-    'base_uri' => 'https://graph.microsoft.com/v1.0/',
-    'headers' => [
-        'Authorization' => "Bearer $accessToken",
-        'Accept' => 'application/json',
-    ],
-]);
+// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+$client = getClient();
 
 // URL inicial para solicitar eventos
 $url = 'me/events';
