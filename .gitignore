@@ -3,3 +3,4 @@ vendor
 ms-cert/*
 ms-token.json
 ms-calendar-read-all.json
+ms-calendar-create-event.json
