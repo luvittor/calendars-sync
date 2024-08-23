@@ -2,3 +2,4 @@ vendor
 .env
 ms-cert/*
 ms-token.json
+ms-calendar-read-all.json
