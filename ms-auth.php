@@ -9,7 +9,7 @@ $dotenv->load();
 // Configuração dos parâmetros necessários
 $clientId = $_ENV['CLIENT_ID'];
 $tenantId = $_ENV['TENANT_ID'];
-$scopes = $_ENV['SCOPES'];
+$scopes = $_ENV['SCOPES'] . ' offline_access'; // Adiciona offline_access ao escopo
 $clientSecret = $_ENV['CLIENT_SECRET'];
 
 // URL do endpoint para solicitar o código do dispositivo
