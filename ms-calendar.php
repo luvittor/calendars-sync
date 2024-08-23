@@ -1,37 +1,58 @@
 <?php
-// Inclui o autoloader e as configurações da API
 require 'vendor/autoload.php';
-
-// Verifica se o arquivo de token já existe
-if (file_exists('token.json')) {
-    // Carrega o token do arquivo
-    $accessToken = json_decode(file_get_contents('token.json'), true);
-    $token = $accessToken['access_token'];
-} else {
-    // Se não existir, executa o processo de autenticação para obter um novo token
-    require 'ms-auth.php';
-    // Carrega o token novamente após a autenticação
-    $accessToken = json_decode(file_get_contents('token.json'), true);
-    $token = $accessToken['access_token'];
-}
-
-// Usa a biblioteca Guzzle para fazer requisições HTTP
 use GuzzleHttp\Client;
 
-$client = new Client();
+// Verifica se o token está disponível e ainda é válido
+$tokenFile = 'token.json';
+$tokenIsValid = false;
 
-// Faz uma requisição GET para obter os eventos do calendário do usuário
-$response = $client->request('GET', 'https://graph.microsoft.com/v1.0/me/events', [
+if (file_exists($tokenFile)) {
+    $tokenData = json_decode(file_get_contents($tokenFile), true);
+    
+    // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
+    if (isset($tokenData['expires_in'])) {
+        $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o token.json foi modificado/criado
+        $currentTime = time();
+        $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
+    }
+}
+
+if (!$tokenIsValid) {
+    // Token expirado ou inexistente, chamar ms-auth.php para obter um novo token
+    require 'ms-auth.php';
+    $tokenData = json_decode(file_get_contents($tokenFile), true);
+}
+
+$accessToken = $tokenData['access_token'];
+
+// Configuração do cliente HTTP
+$client = new Client([
+    'base_uri' => 'https://graph.microsoft.com/v1.0/',
     'headers' => [
-        'Authorization' => 'Bearer ' . $token, // Inclui o token de acesso no cabeçalho da requisição para autenticação
-        'Accept'        => 'application/json', // Especifica que a resposta deve estar no formato JSON
+        'Authorization' => "Bearer $accessToken",
+        'Accept' => 'application/json',
     ],
 ]);
 
-// Decodifica a resposta JSON em um array associativo PHP
-$events = json_decode($response->getBody()->getContents(), true);
+// URL inicial para solicitar eventos
+$url = 'me/events';
+$allEvents = [];
 
-// Itera sobre os eventos retornados e exibe o assunto e a data/hora de início de cada evento
-foreach ($events['value'] as $event) {
-    echo 'Evento: ' . $event['subject'] . ' - ' . $event['start']['dateTime'] . "\n";
+do {
+    // Solicita eventos da API Graph
+    $response = $client->get($url);
+    $events = json_decode($response->getBody(), true);
+
+    // Adiciona os eventos ao array total
+    $allEvents = array_merge($allEvents, $events['value']);
+
+    // Verifica se há uma próxima página de resultados
+    $url = isset($events['@odata.nextLink']) ? $events['@odata.nextLink'] : null;
+
+} while ($url); // Continua até não haver mais uma próxima página
+
+// Exibe todos os eventos
+echo "Total de eventos: " . count($allEvents) . "\n";
+foreach ($allEvents as $event) {
+    echo $event['subject'] . " - " . $event['start']['dateTime'] . "\n";
 }
