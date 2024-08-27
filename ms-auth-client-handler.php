@@ -7,7 +7,7 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 function getClient() {
-    $tokenFile = 'ms-token.json';
+    $tokenFile = 'ms-token-client-secret.json';
     $tokenIsValid = false;
     $tokenData = null;
 
@@ -16,7 +16,7 @@ function getClient() {
         
         // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
         if (isset($tokenData['expires_in'])) {
-            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o ms-token.json foi modificado/criado
+            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o ms-token-client-secret.json foi modificado/criado
             $currentTime = time();
             $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
         }
@@ -53,7 +53,7 @@ function getClient() {
                 exit(1);
             }
         } else {
-            echo "Token expirado e nenhum refresh_token disponível. Por favor, faça login novamente usando ms-auth.php.\n";
+            echo "Token expirado e nenhum refresh_token disponível. Por favor, faça login novamente usando ms-auth-client-secret.php.\n";
             exit(1);
         }
     }
