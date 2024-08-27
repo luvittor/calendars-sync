@@ -19,9 +19,19 @@ if (!isset($eventData['id'])) {
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
 
+// Verifica se o calendarId está presente no JSON
+$calendarId = @$eventData['calendarId'];
+
+// Monta a URL para excluir o evento com base no calendarId
+if ($calendarId) {
+    $eventEndpoint = "me/calendars/$calendarId/events/" . $eventData['id'];
+} else {
+    $eventEndpoint = "me/events/" . $eventData['id'];
+}
+
 // Apaga o evento do calendário
 try {
-    $client->delete('me/events/' . $eventData['id']);
+    $client->delete($eventEndpoint);
     echo "Evento com ID " . $eventData['id'] . " apagado com sucesso.\n";
 
     // Apaga o arquivo JSON após a exclusão bem-sucedida do evento

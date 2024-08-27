@@ -19,19 +19,35 @@ if (!isset($eventData['id'])) {
 // Atualiza as informações do evento
 $eventData['subject'] = 'Reunião Atualizada - Teste com Microsoft Graph API';
 $eventData['body']['content'] = 'Este evento foi atualizado via Microsoft Graph API.';
-$eventData['end']['dateTime'] = '2024-08-25T12:00:00'; // Mudando a hora de término
+$eventData['end']['dateTime'] = '2024-08-26T12:00:00'; // Mudando a hora de término
 
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
 
+// Verifica se o calendarId está presente no JSON
+$calendarId = @$eventData['calendarId'];
+
+// Monta a URL para atualizar o evento com base no calendarId
+if ($calendarId) {
+    $eventEndpoint = "me/calendars/$calendarId/events/" . $eventData['id'];
+} else {
+    $eventEndpoint = "me/events/" . $eventData['id'];
+}
+
 // Atualiza o evento no calendário
 try {
-    $response = $client->patch('me/events/' . $eventData['id'], [
+    // Remove o calendarId do array de dados do evento
+    unset($eventData['calendarId']);
+
+    $response = $client->patch($eventEndpoint, [
         'json' => $eventData,
     ]);
 
     // Recupera as informações atualizadas do evento
     $updatedEvent = json_decode($response->getBody(), true);
+
+    // Insere o calendarId de volta no array de dados do evento
+    $updatedEvent['calendarId'] = $calendarId;
 
     // Salva as informações atualizadas de volta no arquivo JSON
     file_put_contents($jsonFile, json_encode($updatedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
