@@ -2,6 +2,6 @@ vendor
 .env
 ms-cert/*
 ms-token.json
-ms-calendar-event-read-all.json
+ms-calendar-event-list-all.json
 ms-calendar-event-create.json
-ms-calendar-read-all.json
+ms-calendar-list-all.json

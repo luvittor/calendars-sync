@@ -10,7 +10,7 @@ $response = $client->get('me/calendars');
 $calendars = json_decode($response->getBody(), true);
 
 // Salva a lista de calendários em um arquivo JSON
-$jsonFile = 'ms-calendar-read-all.json';
+$jsonFile = 'ms-calendar-list-all.json';
 file_put_contents($jsonFile, json_encode($calendars, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 echo "A lista de calendários foi salva em $jsonFile.\n";
 
