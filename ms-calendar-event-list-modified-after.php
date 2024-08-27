@@ -5,11 +5,21 @@ require 'ms-auth-client-handler.php';
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
 
+// Recupera o ID do calendário do .env, utilizando @ para evitar erros de variáveis não definidas
+$calendarId = @$_ENV['CALENDAR_ID'];
+
+// Monta a URL inicial para solicitar eventos com base no calendarId
+if ($calendarId) {
+    $url = "me/calendars/$calendarId/events";
+} else {
+    $url = "me/events";
+}
+
 // Data e hora a partir da qual queremos listar os eventos modificados
 $modifiedAfter = '2024-08-25T00:00:00Z'; // Substitua pela data e hora desejadas
 
-// URL inicial para solicitar eventos com o filtro de data de modificação
-$url = "me/events?\$filter=lastModifiedDateTime ge $modifiedAfter";
+// Adiciona o filtro para listar eventos modificados após a data e hora especificadas
+$url .= "?\$filter=lastModifiedDateTime ge $modifiedAfter";
 $allEvents = [];
 
 do {

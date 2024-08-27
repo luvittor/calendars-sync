@@ -5,11 +5,21 @@ require 'ms-auth-client-handler.php';
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
 
+// Recupera o ID do calendário do .env, utilizando @ para evitar erros de variáveis não definidas
+$calendarId = @$_ENV['CALENDAR_ID'];
+
+// Monta a URL inicial para solicitar eventos com base no calendarId
+if ($calendarId) {
+    $url = "me/calendars/$calendarId/events";
+} else {
+    $url = "me/events";
+}
+
 // Define a data e hora a partir da qual você quer listar os eventos
 $startDate = '2024-08-24T00:00:00Z'; // Substitua pela data e hora desejada
 
-// URL para solicitar eventos com filtro de data de início
-$url = "me/events?\$filter=start/dateTime ge '$startDate'";
+// Adiciona o filtro para listar eventos a partir da data e hora especificadas
+$url .= "?\$filter=start/dateTime ge '$startDate'";
 $allEvents = [];
 
 do {

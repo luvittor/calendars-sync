@@ -5,8 +5,16 @@ require 'ms-auth-client-handler.php';
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
 
-// URL inicial para solicitar eventos
-$url = 'me/events';
+// Recupera o ID do calendário do .env, utilizando @ para evitar erros de variáveis não definidas
+$calendarId = @$_ENV['CALENDAR_ID'];
+
+// Monta a URL inicial para solicitar eventos com base no calendarId
+if ($calendarId) {
+    $url = "me/calendars/$calendarId/events";
+} else {
+    $url = "me/events";
+}
+
 $allEvents = [];
 
 do {
@@ -21,6 +29,11 @@ do {
     $url = isset($events['@odata.nextLink']) ? $events['@odata.nextLink'] : null;
 
 } while ($url); // Continua até não haver mais uma próxima página
+
+// inserindo calendarId no array de eventos
+foreach ($allEvents as &$event) {
+    $event['calendarId'] = $calendarId;
+}
 
 // Salva todos os eventos no arquivo ms-calendar-event-list-all.json formatado para visualização
 file_put_contents('ms-calendar-event-list-all.json', json_encode($allEvents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
