@@ -12,7 +12,7 @@ $dotenv->load();
 $clientId = $_ENV['CLIENT_ID'];
 $tenantId = $_ENV['TENANT_ID'];
 $audience = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token";
-$scopes = $_ENV['SCOPES'];
+$scopes = $_ENV['SCOPES'] . ' offline_access'; // Adiciona offline_access ao escopo
 
 // Carrega a chave privada para assinar o JWT
 $privateKey = file_get_contents('ms-cert/private_key.pem');
@@ -107,8 +107,8 @@ do {
 // Armazena o token de acesso em um arquivo para uso posterior
 if (isset($token['access_token'])) {
     echo "Armazenando o token de acesso...\n";
-    file_put_contents('ms-token.json', json_encode($token));
-    echo "Token de acesso recebido e armazenado em 'ms-token.json'.\n";
+    file_put_contents('ms-token-client-assertion.json', json_encode($token));
+    echo "Token de acesso recebido e armazenado em 'ms-token-client-assertion.json'.\n";
 } else {
     echo "Erro ao obter o token de acesso: " . $token['error_description'] . "\n";
 }

@@ -1,6 +1,6 @@
 <?php
 require 'vendor/autoload.php';
-require 'ms-client-handler.php';
+require 'ms-auth-client-handler.php';
 
 // Verifica se o arquivo ms-calendar-event-create.json existe
 $jsonFile = 'ms-calendar-event-create.json';

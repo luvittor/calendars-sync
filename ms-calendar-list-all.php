@@ -1,6 +1,6 @@
 <?php
 require 'vendor/autoload.php';
-require 'ms-client-handler.php';
+require 'ms-auth-client-handler.php';
 
 // Obtém o cliente HTTP com o token já verificado e renovado se necessário
 $client = getClient();
