@@ -7,7 +7,7 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 function getClient() {
-    $tokenFile = 'ms-token-client-secret.json';
+    $tokenFile = 'ms-auth-client-secret-token.json';
     $tokenIsValid = false;
     $tokenData = null;
 
@@ -16,7 +16,7 @@ function getClient() {
         
         // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
         if (isset($tokenData['expires_in'])) {
-            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o ms-token-client-secret.json foi modificado/criado
+            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o ms-auth-client-secret-token.json foi modificado/criado
             $currentTime = time();
             $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
         }
