@@ -1,6 +1,6 @@
 vendor
 .env
-ms-auth-cert/*
+ms-auth-cert/*.pem
 ms-auth-client-assertion-token.json
 ms-auth-client-secret-token.json
 ms-calendar-event-list-all.json
