@@ -84,7 +84,7 @@ do {
 // Armazena o token de acesso em um arquivo para uso posterior
 if (isset($token['access_token'])) {
     echo "Armazenando o token de acesso...\n";
-    file_put_contents('ms-auth-client-secret-token.json', json_encode($token));
+    file_put_contents('ms-auth-client-secret-token.json', json_encode($token, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     echo "Token de acesso recebido e armazenado em 'ms-auth-client-secret-token.json'.\n";
 } else {
     echo "Erro ao obter o token de acesso: " . $token['error_description'] . "\n";
