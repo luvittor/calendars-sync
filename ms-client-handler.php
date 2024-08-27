@@ -2,6 +2,10 @@
 require 'vendor/autoload.php';
 use GuzzleHttp\Client;
 
+// Carrega as variáveis do arquivo .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 function getClient() {
     $tokenFile = 'ms-token.json';
     $tokenIsValid = false;
@@ -27,7 +31,6 @@ function getClient() {
                 $response = $client->post("https://login.microsoftonline.com/{$_ENV['TENANT_ID']}/oauth2/v2.0/token", [
                     'form_params' => [
                         'client_id' => $_ENV['CLIENT_ID'],
-                        'client_secret' => $_ENV['CLIENT_SECRET'],
                         'grant_type' => 'refresh_token',
                         'refresh_token' => $tokenData['refresh_token'],
                         'scope' => $_ENV['SCOPES'],
