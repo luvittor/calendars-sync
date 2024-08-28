@@ -7,7 +7,10 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 function getClient() {
-    $tokenFile = 'ms-auth-client-secret-token.json';
+    $clientSecretAuth = $_ENV['CLIENT_SECRET_AUTH'] == "TRUE";
+
+    $tokenFile = $clientSecretAuth ? 'ms-auth-client-secret-token.json' : 'ms-auth-client-assertion-token.json';
+    $scriptFile = $clientSecretAuth ? 'ms-auth-client-secret.php' : 'ms-auth-client-assertion.php';
     $tokenIsValid = false;
     $tokenData = null;
 
@@ -16,10 +19,13 @@ function getClient() {
         
         // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
         if (isset($tokenData['expires_in'])) {
-            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o ms-auth-client-secret-token.json foi modificado/criado
+            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o json foi modificado/criado
             $currentTime = time();
             $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
         }
+    } else {
+        echo "Token não encontrado. Por favor, faça login usando $scriptFile.\n";
+        exit(1);
     }
 
     // Se o token não for válido, tenta renová-lo usando o refresh_token
@@ -42,7 +48,7 @@ function getClient() {
                 // Verifica se o novo token foi obtido com sucesso
                 if (isset($newTokenData['access_token'])) {
                     // Armazena o novo token e atualiza o tokenData
-                    file_put_contents($tokenFile, json_encode($newTokenData));
+                    file_put_contents($tokenFile, json_encode($newTokenData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                     $tokenData = $newTokenData;
                     echo "Token renovado com sucesso.\n";
                 } else {
@@ -53,7 +59,7 @@ function getClient() {
                 exit(1);
             }
         } else {
-            echo "Token expirado e nenhum refresh_token disponível. Por favor, faça login novamente usando ms-auth-client-secret.php.\n";
+            echo "Token expirado e nenhum refresh_token disponível. Por favor, faça login novamente usando $scriptFile.\n";
             exit(1);
         }
     }
