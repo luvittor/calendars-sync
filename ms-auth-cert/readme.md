@@ -1,1 +1,1 @@
-Pasta para armazenar os certificados para autenticação.
+Pasta usada para armazenar os arquivos .pem do certificado digital usado para autenticação client_assertion.
