@@ -2,27 +2,27 @@
 require 'vendor/autoload.php';
 require 'ms-auth-client-handler.php';
 
-// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+// Gets the HTTP client with the token already verified and renewed if necessary
 $client = getClient();
 
-// Recupera o ID do calendário do .env, utilizando @ para evitar erros de variáveis não definidas
+// Retrieves the calendar ID from .env, using @ to avoid undefined variable errors
 $calendarId = @$_ENV['CALENDAR_ID'];
 
-// Verifica se o calendarId está definido
+// Checks if calendarId is set
 if ($calendarId) {
-    // Se o calendarId estiver definido, cria o evento nesse calendário
+    // If calendarId is set, creates the event in that calendar
     $calendarEndpoint = "me/calendars/$calendarId/events";
 } else {
-    // Se não estiver definido, cria o evento no calendário padrão
+    // If not set, creates the event in the default calendar
     $calendarEndpoint = "me/events";
 }
 
-// Dados do evento a ser criado
+// Event data to be created
 $eventData = [
-    'subject' => 'Reunião de Teste com Microsoft Graph API',
+    'subject' => 'Test Meeting with Microsoft Graph API',
     'body' => [
         'contentType' => 'HTML',
-        'content' => 'Esta é uma reunião de teste criada via Microsoft Graph API.',
+        'content' => 'This is a test meeting created via Microsoft Graph API.',
     ],
     'start' => [
         'dateTime' => '2024-08-26T10:00:00',
@@ -33,39 +33,39 @@ $eventData = [
         'timeZone' => 'America/Sao_Paulo',
     ],
     'location' => [
-        'displayName' => 'Escritório',
+        'displayName' => 'Office',
     ],
     'attendees' => [
         [
             'emailAddress' => [
-                'address' => 'exemplo@dominio.com',
-                'name' => 'Nome do Participante',
+                'address' => 'example@domain.com',
+                'name' => 'Attendee Name',
             ],
             'type' => 'required',
         ],
     ],
 ];
 
-// Cria o evento no calendário especificado
+// Creates the event in the specified calendar
 try {
     $response = $client->post($calendarEndpoint, [
         'json' => $eventData,
     ]);
 
     $createdEvent = json_decode($response->getBody(), true);
-    echo "Evento criado com sucesso:\n";
-    echo "ID do Evento: " . $createdEvent['id'] . "\n";
-    echo "Assunto: " . $createdEvent['subject'] . "\n";
-    echo "Início: " . $createdEvent['start']['dateTime'] . "\n";
-    echo "Término: " . $createdEvent['end']['dateTime'] . "\n";
+    echo "Event created successfully:\n";
+    echo "Event ID: " . $createdEvent['id'] . "\n";
+    echo "Subject: " . $createdEvent['subject'] . "\n";
+    echo "Start: " . $createdEvent['start']['dateTime'] . "\n";
+    echo "End: " . $createdEvent['end']['dateTime'] . "\n";
 
-    // Adiciona o calendarId usado para salvar o evento no JSON, deixa vazio se for o calendário padrão
+    // Adds the calendarId used to save the event in the JSON, leaves it empty if it's the default calendar
     $createdEvent['calendarId'] = $calendarId ?? '';
 
-    // Salva todos os dados do evento no arquivo ms-calendar-event-create.json
+    // Saves all event data to the ms-calendar-event-create.json file
     file_put_contents('ms-calendar-event-create.json', json_encode($createdEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    echo "Dados do evento criado salvos em 'ms-calendar-event-create.json'.\n";
+    echo "Created event data saved in 'ms-calendar-event-create.json'.\n";
 
 } catch (\Exception $e) {
-    echo "Erro ao criar o evento: " . $e->getMessage() . "\n";
+    echo "Error creating the event: " . $e->getMessage() . "\n";
 }

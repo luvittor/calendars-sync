@@ -2,45 +2,45 @@
 require 'vendor/autoload.php';
 require 'ms-auth-client-handler.php';
 
-// Verifica se o arquivo ms-calendar-event-create.json existe
+// Checks if the ms-calendar-event-create.json file exists
 $jsonFile = 'ms-calendar-event-create.json';
 if (!file_exists($jsonFile)) {
-    echo "Arquivo $jsonFile não encontrado. Certifique-se de que o evento foi criado.\n";
+    echo "File $jsonFile not found. Make sure the event was created.\n";
     exit(1);
 }
 
-// Carrega as informações do evento a partir do JSON
+// Loads the event information from the JSON file
 $eventData = json_decode(file_get_contents($jsonFile), true);
 if (!isset($eventData['id'])) {
-    echo "ID do evento não encontrado no arquivo JSON. Não é possível apagar o evento.\n";
+    echo "Event ID not found in the JSON file. Cannot delete the event.\n";
     exit(1);
 }
 
-// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+// Gets the HTTP client with the token already verified and renewed if necessary
 $client = getClient();
 
-// Verifica se o calendarId está presente no JSON
+// Checks if calendarId is present in the JSON
 $calendarId = @$eventData['calendarId'];
 
-// Monta a URL para excluir o evento com base no calendarId
+// Builds the URL to delete the event based on calendarId
 if ($calendarId) {
     $eventEndpoint = "me/calendars/$calendarId/events/" . $eventData['id'];
 } else {
     $eventEndpoint = "me/events/" . $eventData['id'];
 }
 
-// Apaga o evento do calendário
+// Deletes the event from the calendar
 try {
     $client->delete($eventEndpoint);
-    echo "Evento com ID " . $eventData['id'] . " apagado com sucesso.\n";
+    echo "Event with ID " . $eventData['id'] . " deleted successfully.\n";
 
-    // Apaga o arquivo JSON após a exclusão bem-sucedida do evento
+    // Deletes the JSON file after the event is successfully deleted
     if (unlink($jsonFile)) {
-        echo "Arquivo $jsonFile apagado com sucesso.\n";
+        echo "File $jsonFile deleted successfully.\n";
     } else {
-        echo "Erro ao tentar apagar o arquivo $jsonFile.\n";
+        echo "Error trying to delete the file $jsonFile.\n";
     }
 
 } catch (\Exception $e) {
-    echo "Erro ao apagar o evento: " . $e->getMessage() . "\n";
+    echo "Error deleting the event: " . $e->getMessage() . "\n";
 }

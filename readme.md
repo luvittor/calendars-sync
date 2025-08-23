@@ -1,199 +1,200 @@
 # Microsoft API Calendar Integration
 
-Este projeto fornece exemplos de scripts em PHP para interagir com a API de Calendário da Microsoft.
+This project provides PHP script examples to interact with the Microsoft Calendar API.
 
-Os scripts permitem listar calendários e manipular eventos (listar, criar, atualizar e deletar), além de gerar e renovar tokens de autenticação.
+The scripts allow you to list calendars and manage events (list, create, update, and delete), as well as generate and renew authentication tokens.
 
-## Configuração Inicial
+## Initial Setup
 
-### 1. Configurar o Azure e Obter Parâmetros
+### 1. Configure Azure and Obtain Parameters
 
-1. Acesse o [Azure Portal](https://portal.azure.com/) e faça login com suas credenciais.
+1. Access the [Azure Portal](https://portal.azure.com/) and log in with your credentials.
 
-2. Navegue até **Azure Active Directory** > **App registrations** e clique em **New registration** para registrar uma nova aplicação.
+2. Navigate to **Azure Active Directory** > **App registrations** and click **New registration** to register a new application.
 
-3. Preencha as informações necessárias:
-   - **Name**: Nome da sua aplicação.
-   - **Supported account types**: Escolha quem pode usar esta aplicação (geralmente "Accounts in this organizational directory only").
-   - **Redirect URI**: Pode ser deixado em branco para este projeto.
+3. Fill in the required information:
+  - **Name**: Name of your application.
+  - **Supported account types**: Choose who can use this application (usually "Accounts in this organizational directory only").
+  - **Redirect URI**: Can be left blank for this project.
 
-4. Clique em **Register**.
+4. Click **Register**.
 
-5. Após o registro, você será redirecionado para a página da aplicação onde poderá obter os seguintes parâmetros:
-   - **Application (client) ID**: Este será o seu `CLIENT_ID`.
-   - **Directory (tenant) ID**: Este será o seu `TENANT_ID`.
+5. After registration, you will be redirected to the application page where you can obtain the following parameters:
+  - **Application (client) ID**: This will be your `CLIENT_ID`.
+  - **Directory (tenant) ID**: This will be your `TENANT_ID`.
 
-6. Para gerar um `CLIENT_SECRET`, navegue até **Certificates & secrets** > **Client secrets** > **New client secret**. Copie o valor gerado e armazene como `CLIENT_SECRET` no arquivo `.env`.
+6. To generate a `CLIENT_SECRET`, go to **Certificates & secrets** > **Client secrets** > **New client secret**. Copy the generated value and store it as `CLIENT_SECRET` in the `.env` file.
 
-7. Habilite a opção **Allow public client flows**:
-   - Vá até **Authentication**.
-   - Em **Allow public client flows**, marque **Yes**.
+7. Enable the **Allow public client flows** option:
+  - Go to **Authentication**.
+  - In **Allow public client flows**, select **Yes**.
 
-### 2. Definir Parâmetros
+### 2. Set Parameters
 
-1. **Copie o arquivo `.env-example` para `.env`**:
+1. **Copy the `.env-example` file to `.env`**:
    
-   ```bash
-   cp .env-example .env
-   ```
+  ```bash
+  cp .env-example .env
+  ```
    
-   Em seguida, edite o arquivo `.env` e preencha os parâmetros conforme necessário.
+  Then edit the `.env` file and fill in the parameters as needed.
 
-2. **Parâmetros Necessários**:
+2. **Required Parameters**:
    
-   - **CLIENT_ID**: 
-     - O ID do Cliente da sua aplicação registrada no [Azure](https://portal.azure.com/).
-     - **Como obter**: No portal do [Azure](https://portal.azure.com/), acesse **Azure Active Directory** > **App registrations** > selecione sua aplicação > copie o "Application (client) ID".
+  - **CLIENT_ID**: 
+    - The Client ID of your application registered in [Azure](https://portal.azure.com/).
+    - **How to obtain**: In the [Azure](https://portal.azure.com/) portal, go to **Azure Active Directory** > **App registrations** > select your application > copy the "Application (client) ID".
 
-   - **CLIENT_SECRET**:
-     - O segredo do cliente para autenticação.
-     - **Como obter**: No portal do [Azure](https://portal.azure.com/), acesse **Azure Active Directory** > **App registrations** > selecione sua aplicação > **Certificates & secrets** > **Client secrets** > **New client secret**. Copie o valor gerado.
-     - **Nota**: Não necessário se quiser autenticação via certificado digital.
+  - **CLIENT_SECRET**:
+    - The client secret for authentication.
+    - **How to obtain**: In the [Azure](https://portal.azure.com/) portal, go to **Azure Active Directory** > **App registrations** > select your application > **Certificates & secrets** > **Client secrets** > **New client secret**. Copy the generated value.
+    - **Note**: Not required if you want authentication via digital certificate.
 
-   - **CLIENT_SECRET_AUTH**:
-     - Define o método de autenticação.
-     - **TRUE**: Para autenticação usando `client_secret`.
-     - **FALSE**: Para autenticação usando `client_assertion` (certificado digital).
+  - **CLIENT_SECRET_AUTH**:
+    - Defines the authentication method.
+    - **TRUE**: For authentication using `client_secret`.
+    - **FALSE**: For authentication using `client_assertion` (digital certificate).
 
-   - **TENANT_ID**:
-     - O ID do locatário (tenant) da sua organização no [Azure](https://portal.azure.com/).
-     - **Como obter**: No portal do [Azure](https://portal.azure.com/), acesse **Azure Active Directory** > copie o "Tenant ID".
+  - **TENANT_ID**:
+    - The tenant ID of your organization in [Azure](https://portal.azure.com/).
+    - **How to obtain**: In the [Azure](https://portal.azure.com/) portal, go to **Azure Active Directory** > copy the "Tenant ID".
+
 
    - **SCOPES**:
-     - As permissões necessárias para acessar o calendário.
-     - **Valor padrão**: `openid profile Calendars.Read Calendars.ReadWrite`.
-     - **Nota**: Não precisa ser alterado.
+     - The permissions required to access the calendar.
+     - **Default value**: `openid profile Calendars.Read Calendars.ReadWrite`.
+     - **Note**: No need to change.
 
    - **CALENDAR_ID**:
-     - O ID do calendário onde os eventos serão criados.
-     - **Nota**: Deixe em branco para usar o calendário padrão. Caso deseje usar um calendário específico, rode `ms-calendar-list-all.php` após autenticação para recuperar o ID.
+     - The ID of the calendar where events will be created.
+     - **Note**: Leave blank to use the default calendar. If you want to use a specific calendar, run `ms-calendar-list-all.php` after authentication to retrieve the ID.
 
-3. **Autenticação com `client_assertion` (certificado digital)**:
+3. **Authentication with `client_assertion` (digital certificate)**:
    
-   Caso opte por usar `client_assertion`, será necessário gerar um certificado digital.
+   If you choose to use `client_assertion`, you will need to generate a digital certificate.
 
-   - **Geração do Certificado**:
+   - **Certificate Generation**:
    
-     No WSL ou em um ambiente Unix-like, rode:
+     In WSL or a Unix-like environment, run:
 
      ```bash
      openssl req -newkey rsa:2048 -nodes -keyout private.pem -x509 -days 365 -out public.pem
      ```
 
-     Isso gerará dois arquivos: `private.pem` (chave privada) e `public.pem` (certificado público).
+     This will generate two files: `private.pem` (private key) and `public.pem` (public certificate).
 
-   - **Suba o Certificado no Azure**:
+   - **Upload the Certificate to Azure**:
      
-     No portal do [Azure](https://portal.azure.com/), acesse **Azure Active Directory** > **App registrations** > selecione sua aplicação > **Certificates & secrets** > **Certificates** > **Upload certificate**. Suba o `public.pem`.
+     In the [Azure](https://portal.azure.com/) portal, go to **Azure Active Directory** > **App registrations** > select your application > **Certificates & secrets** > **Certificates** > **Upload certificate**. Upload `public.pem`.
 
-   - **Configuração dos Arquivos**:
+   - **File Configuration**:
      
-     Mova os arquivos `private.pem` e `public.pem` para o diretório `ms-auth-cert` dentro do projeto.
+     Move the `private.pem` and `public.pem` files to the `ms-auth-cert` directory inside the project.
 
-### 3. Instalar Dependências
+### 3. Install Dependencies
 
-Instale as dependências do projeto utilizando o Composer:
+Install the project dependencies using Composer:
 
 ```bash
 composer install
 ```
 
-### 4. Autenticação
+### 4. Authentication
 
-Antes de usar os exemplos, você precisa gerar um token de acesso.
+Before using the examples, you need to generate an access token.
 
-- **Usando `client_secret`**:
+- **Using `client_secret`**:
 
-  Se o `CLIENT_SECRET_AUTH` estiver definido como `TRUE` no arquivo `.env`, use o seguinte comando para autenticar:
+  If `CLIENT_SECRET_AUTH` is set to `TRUE` in the `.env` file, use the following command to authenticate:
 
   ```bash
   php ms-auth-client-secret.php
   ```
 
-  O token gerado será salvo no arquivo `ms-auth-client-secret-token.json`.
+  The generated token will be saved in the `ms-auth-client-secret-token.json` file.
 
-- **Usando `client_assertion`**:
+- **Using `client_assertion`**:
 
-  Se o `CLIENT_SECRET_AUTH` estiver definido como `FALSE`, use:
+  If `CLIENT_SECRET_AUTH` is set to `FALSE`, use:
 
   ```bash
   php ms-auth-client-assertion.php
   ```
 
-  O token gerado será salvo no arquivo `ms-auth-client-assertion-token.json`.
+  The generated token will be saved in the `ms-auth-client-assertion-token.json` file.
 
-## Exemplos de Uso
+## Usage Examples
 
-### 1. Listar Todos os Calendários
+### 1. List All Calendars
 
-Este script lista todos os calendários disponíveis na conta.
+This script lists all calendars available in the account.
 
 ```bash
 php ms-calendar-list-all.php
 ```
 
-A lista de calendários será salva em `ms-calendar-list-all.json`.
+The list of calendars will be saved in `ms-calendar-list-all.json`.
 
-### 2. Criar um Evento
+### 2. Create an Event
 
-Cria um novo evento no calendário especificado (ou no calendário padrão se `CALENDAR_ID` não estiver configurado).
+Creates a new event in the specified calendar (or in the default calendar if `CALENDAR_ID` is not set).
 
 ```bash
 php ms-calendar-event-create.php
 ```
 
-Os detalhes do evento criado serão salvos em `ms-calendar-event-create.json`.
+The details of the created event will be saved in `ms-calendar-event-create.json`.
 
-### 3. Atualizar um Evento
+### 3. Update an Event
 
-Atualiza um evento existente com base nas informações armazenadas em `ms-calendar-event-create.json`.
+Updates an existing event based on the information stored in `ms-calendar-event-create.json`.
 
 ```bash
 php ms-calendar-event-update.php
 ```
 
-Os detalhes atualizados serão salvos no mesmo arquivo JSON.
+The updated details will be saved in the same JSON file.
 
-### 4. Deletar um Evento
+### 4. Delete an Event
 
-Deleta um evento existente com base nas informações armazenadas em `ms-calendar-event-create.json`.
+Deletes an existing event based on the information stored in `ms-calendar-event-create.json`.
 
 ```bash
 php ms-calendar-event-delete.php
 ```
 
-O evento será deletado e o arquivo JSON será removido.
+The event will be deleted and the JSON file will be removed.
 
-### 5. Listar Todos os Eventos
+### 5. List All Events
 
-Este script lista todos os eventos do calendário especificado (ou do calendário padrão) e salva em um arquivo JSON.
+This script lists all events from the specified calendar (or the default calendar) and saves them in a JSON file.
 
 ```bash
 php ms-calendar-event-list-all.php
 ```
 
-Os eventos serão salvos em `ms-calendar-event-list-all.json`.
+The events will be saved in `ms-calendar-event-list-all.json`.
 
-### 6. Listar Eventos a partir de uma Data Específica
+### 6. List Events from a Specific Date
 
-Lista eventos agendados a partir de uma data específica.
+Lists events scheduled from a specific date.
 
 ```bash
 php ms-calendar-event-list-start-date.php
 ```
 
-Os eventos serão exibidos na tela.
+The events will be displayed on the screen.
 
-### 7. Listar Eventos Modificados Após uma Data
+### 7. List Events Modified After a Date
 
-Lista eventos que foram modificados após uma data específica.
+Lists events that were modified after a specific date.
 
 ```bash
 php ms-calendar-event-list-modified-after.php
 ```
 
-Os eventos serão exibidos na tela.
+The events will be displayed on the screen.
 
-## Considerações Finais
+## Final Considerations
 
-Esses scripts oferecem um ponto de partida para a integração com a API do Calendário da Microsoft. Eles podem ser adaptados para atender a necessidades específicas.
+These scripts provide a starting point for integrating with the Microsoft Calendar API. They can be adapted to meet specific needs.

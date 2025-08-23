@@ -2,21 +2,21 @@
 require 'vendor/autoload.php';
 require 'ms-auth-client-handler.php';
 
-// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+// Gets the HTTP client with the token already verified and renewed if necessary
 $client = getClient();
 
-// Solicita a lista de calendários
+// Requests the list of calendars
 $response = $client->get('me/calendars');
 $calendars = json_decode($response->getBody(), true);
 
-// Salva a lista de calendários em um arquivo JSON
+// Saves the list of calendars in a JSON file
 $jsonFile = 'ms-calendar-list-all.json';
 file_put_contents($jsonFile, json_encode($calendars, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-echo "A lista de calendários foi salva em $jsonFile.\n";
+echo "The list of calendars has been saved to $jsonFile.\n";
 
-// Exibe os calendários disponíveis e salva em um arquivo JSON
+// Displays the available calendars and saves in a JSON file
 // echo "\n";
-// echo "Calendários disponíveis:\n";
+// echo "Available calendars:\n";
 // foreach ($calendars['value'] as $calendar) {
-//     echo "ID: " . $calendar['id'] . " - Nome: " . $calendar['name'] . "\n";
+//     echo "ID: " . $calendar['id'] . " - Name: " . $calendar['name'] . "\n";
 // }

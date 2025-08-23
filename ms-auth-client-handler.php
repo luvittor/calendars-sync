@@ -1,9 +1,10 @@
 <?php
 require 'vendor/autoload.php';
 use GuzzleHttp\Client;
+use Dotenv\Dotenv;
 
-// Carrega as variáveis do arquivo .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+// Loads environment variables from the .env file
+$dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 function getClient() {
@@ -17,22 +18,22 @@ function getClient() {
     if (file_exists($tokenFile)) {
         $tokenData = json_decode(file_get_contents($tokenFile), true);
         
-        // Verifica se o token tem um campo 'expires_in' e se ele ainda é válido
+        // Checks if the token has an 'expires_in' field and if it is still valid
         if (isset($tokenData['expires_in'])) {
-            $tokenAcquiredAt = filemtime($tokenFile); // Tempo em que o json foi modificado/criado
+            $tokenAcquiredAt = filemtime($tokenFile); // Time when the json was modified/created
             $currentTime = time();
             $tokenIsValid = ($tokenAcquiredAt + $tokenData['expires_in']) > $currentTime;
         }
     } else {
-        echo "Token não encontrado. Por favor, faça login usando $scriptFile.\n";
+        echo "Token not found. Please log in using $scriptFile.\n";
         exit(1);
     }
 
-    // Se o token não for válido, tenta renová-lo usando o refresh_token
+    // If the token is not valid, try to renew it using the refresh_token
     if (!$tokenIsValid) {
         if (isset($tokenData['refresh_token'])) {
             try {
-                // Configura o cliente HTTP para solicitar um novo access_token usando o refresh_token
+                // Configures the HTTP client to request a new access_token using the refresh_token
                 $client = new Client();
                 $response = $client->post("https://login.microsoftonline.com/{$_ENV['TENANT_ID']}/oauth2/v2.0/token", [
                     'form_params' => [
@@ -45,28 +46,28 @@ function getClient() {
 
                 $newTokenData = json_decode($response->getBody(), true);
 
-                // Verifica se o novo token foi obtido com sucesso
+                // Checks if the new token was successfully obtained
                 if (isset($newTokenData['access_token'])) {
-                    // Armazena o novo token e atualiza o tokenData
+                    // Stores the new token and updates tokenData
                     file_put_contents($tokenFile, json_encode($newTokenData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
                     $tokenData = $newTokenData;
-                    echo "Token renovado com sucesso.\n";
+                    echo "Token successfully renewed.\n";
                 } else {
-                    throw new Exception("Falha ao renovar o token: " . json_encode($newTokenData));
+                    throw new Exception("Failed to renew token: " . json_encode($newTokenData));
                 }
             } catch (\Exception $e) {
-                echo "Erro ao tentar renovar o token: " . $e->getMessage() . "\n";
+                echo "Error trying to renew the token: " . $e->getMessage() . "\n";
                 exit(1);
             }
         } else {
-            echo "Token expirado e nenhum refresh_token disponível. Por favor, faça login novamente usando $scriptFile.\n";
+            echo "Token expired and no refresh_token available. Please log in again using $scriptFile.\n";
             exit(1);
         }
     }
 
     $accessToken = $tokenData['access_token'];
 
-    // Configuração do cliente HTTP
+    // HTTP client configuration
     return new Client([
         'base_uri' => 'https://graph.microsoft.com/v1.0/',
         'headers' => [

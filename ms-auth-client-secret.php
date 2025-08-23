@@ -1,24 +1,24 @@
 <?php
-// Carrega o autoloader do Composer para usar as bibliotecas instaladas
+// Loads Composer's autoloader to use installed libraries
 require 'vendor/autoload.php';
 
-// Carrega as variáveis do arquivo .env
+// Loads the variables from the .env file
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// Configuração dos parâmetros necessários
+// Configuration of required parameters
 $clientId = $_ENV['CLIENT_ID'];
 $tenantId = $_ENV['TENANT_ID'];
-$scopes = $_ENV['SCOPES'] . ' offline_access'; // Adiciona offline_access ao escopo
+$scopes = $_ENV['SCOPES'] . ' offline_access'; // Adds offline_access to the scope
 $clientSecret = $_ENV['CLIENT_SECRET'];
 
-// URL do endpoint para solicitar o código do dispositivo
+// Endpoint URL to request the device code
 $deviceCodeEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode";
-// URL do endpoint para obter o token de acesso
+// Endpoint URL to obtain the access token
 $tokenEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token";
 
-// Solicita o código do dispositivo
-echo "Solicitando o código do dispositivo...\n";
+// Requests the device code
+echo "Requesting device code...\n";
 $client = new \GuzzleHttp\Client();
 
 try {
@@ -31,25 +31,25 @@ try {
 
     $deviceCodeResponse = json_decode($response->getBody(), true);
 
-    // Exibe as instruções para o usuário autenticar em outro dispositivo
-    echo "Código do dispositivo obtido com sucesso.\n";
-    echo "Por favor, visite " . $deviceCodeResponse['verification_uri'] . "\n";
-    echo "E entre com o código: " . $deviceCodeResponse['user_code'] . "\n";
+    // Displays instructions for the user to authenticate on another device
+    echo "Device code obtained successfully.\n";
+    echo "Please visit " . $deviceCodeResponse['verification_uri'] . "\n";
+    echo "And enter the code: " . $deviceCodeResponse['user_code'] . "\n";
 
 } catch (\Exception $e) {
-    echo "Erro ao solicitar o código do dispositivo: " . $e->getMessage() . "\n";
+    echo "Error requesting device code: " . $e->getMessage() . "\n";
     exit(1);
 }
 
-// Loop para verificar se a autorização foi concluída
-echo "Aguardando a autorização do usuário...\n";
+// Loop to check if authorization is complete
+echo "Waiting for user authorization...\n";
 do {
     try {
-        // Aguarda o intervalo definido mais alguns segundos antes de tentar novamente
-        sleep($deviceCodeResponse['interval'] + 5); // Adiciona 5 segundos extras
+    // Waits the defined interval plus a few extra seconds before trying again
+    sleep($deviceCodeResponse['interval'] + 5); // Adds 5 extra seconds
 
-        // Tenta obter o token de acesso
-        echo "Tentando obter o token de acesso...\n";
+    // Tries to obtain the access token
+    echo "Trying to obtain the access token...\n";
         $tokenResponse = $client->post($tokenEndpoint, [
             'form_params' => [
                 'client_id' => $clientId,
@@ -61,31 +61,31 @@ do {
 
         $token = json_decode($tokenResponse->getBody(), true);
 
-        // Verifica se o token foi obtido com sucesso
+        // Checks if the token was obtained successfully
         if (isset($token['access_token'])) {
-            echo "Token de acesso obtido com sucesso.\n";
+            echo "Access token obtained successfully.\n";
             break;
         }
         
     } catch (\GuzzleHttp\Exception\ClientException $e) {
         $responseBody = $e->getResponse()->getBody()->getContents();
-        echo "Erro ao tentar obter o token de acesso: " . $responseBody . "\n";
+        echo "Error trying to obtain the access token: " . $responseBody . "\n";
 
-        // Verifica se a exceção é devido à autorização pendente
+        // Checks if the exception is due to pending authorization
         if ($e->getResponse()->getStatusCode() !== 400 || strpos($responseBody, 'authorization_pending') === false) {
-            throw $e; // Se não for "authorization_pending", relança a exceção
+            throw $e; // If not "authorization_pending", rethrow the exception
         }
 
-        // Caso contrário, continua tentando até que a autorização seja concluída
-        echo "Autorização ainda pendente, tentando novamente...\n";
+        // Otherwise, keep trying until authorization is complete
+        echo "Authorization still pending, trying again...\n";
     }
 } while (true);
 
-// Armazena o token de acesso em um arquivo para uso posterior
+// Stores the access token in a file for later use
 if (isset($token['access_token'])) {
-    echo "Armazenando o token de acesso...\n";
+    echo "Storing the access token...\n";
     file_put_contents('ms-auth-client-secret-token.json', json_encode($token, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    echo "Token de acesso recebido e armazenado em 'ms-auth-client-secret-token.json'.\n";
+    echo "Access token received and stored in 'ms-auth-client-secret-token.json'.\n";
 } else {
-    echo "Erro ao obter o token de acesso: " . $token['error_description'] . "\n";
+    echo "Error obtaining the access token: " . $token['error_description'] . "\n";
 }

@@ -1,1 +1,1 @@
-Pasta usada para armazenar os arquivos .pem do certificado digital usado para autenticação client_assertion.
+Folder used to store the .pem files of the digital certificate used for client_assertion authentication.

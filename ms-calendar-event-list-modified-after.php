@@ -2,41 +2,41 @@
 require 'vendor/autoload.php';
 require 'ms-auth-client-handler.php';
 
-// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+// Gets the HTTP client with the token already verified and renewed if necessary
 $client = getClient();
 
-// Recupera o ID do calendário do .env, utilizando @ para evitar erros de variáveis não definidas
+// Retrieves the calendar ID from .env, using @ to avoid undefined variable errors
 $calendarId = @$_ENV['CALENDAR_ID'];
 
-// Monta a URL inicial para solicitar eventos com base no calendarId
+// Builds the initial URL to request events based on calendarId
 if ($calendarId) {
     $url = "me/calendars/$calendarId/events";
 } else {
     $url = "me/events";
 }
 
-// Data e hora a partir da qual queremos listar os eventos modificados
-$modifiedAfter = '2024-08-25T00:00:00Z'; // Substitua pela data e hora desejadas
+// Date and time from which we want to list modified events
+$modifiedAfter = '2024-08-25T00:00:00Z'; // Replace with the desired date and time
 
-// Adiciona o filtro para listar eventos modificados após a data e hora especificadas
+// Adds the filter to list events modified after the specified date and time
 $url .= "?\$filter=lastModifiedDateTime ge $modifiedAfter";
 $allEvents = [];
 
 do {
-    // Solicita eventos da API Graph com o filtro aplicado
+    // Requests events from the Graph API with the filter applied
     $response = $client->get($url);
     $events = json_decode($response->getBody(), true);
 
-    // Adiciona os eventos ao array total
+    // Adds the events to the total array
     $allEvents = array_merge($allEvents, $events['value']);
 
-    // Verifica se há uma próxima página de resultados
+    // Checks if there is a next page of results
     $url = isset($events['@odata.nextLink']) ? $events['@odata.nextLink'] : null;
 
-} while ($url); // Continua até não haver mais uma próxima página
+} while ($url); // Continues until there are no more next pages
 
-// Exibe todos os eventos
-echo "Total de eventos modificados após $modifiedAfter: " . count($allEvents) . "\n";
+// Displays all events
+echo "Total events modified after $modifiedAfter: " . count($allEvents) . "\n";
 foreach ($allEvents as $event) {
-    echo $event['subject'] . " - Modificado em: " . $event['lastModifiedDateTime'] . "\n";
+    echo $event['subject'] . " - Modified at: " . $event['lastModifiedDateTime'] . "\n";
 }

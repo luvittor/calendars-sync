@@ -2,57 +2,57 @@
 require 'vendor/autoload.php';
 require 'ms-auth-client-handler.php';
 
-// Verifica se o arquivo ms-calendar-event-create.json existe
+// Checks if the ms-calendar-event-create.json file exists
 $jsonFile = 'ms-calendar-event-create.json';
 if (!file_exists($jsonFile)) {
-    echo "Arquivo $jsonFile não encontrado. Certifique-se de que o evento foi criado.\n";
+    echo "File $jsonFile not found. Make sure the event was created.\n";
     exit(1);
 }
 
-// Carrega as informações do evento a partir do JSON
+// Loads the event information from the JSON file
 $eventData = json_decode(file_get_contents($jsonFile), true);
 if (!isset($eventData['id'])) {
-    echo "ID do evento não encontrado no arquivo JSON. Não é possível atualizar o evento.\n";
+    echo "Event ID not found in the JSON file. Cannot update the event.\n";
     exit(1);
 }
 
-// Atualiza as informações do evento
-$eventData['subject'] = 'Reunião Atualizada - Teste com Microsoft Graph API';
-$eventData['body']['content'] = 'Este evento foi atualizado via Microsoft Graph API.';
-$eventData['end']['dateTime'] = '2024-08-26T12:00:00'; // Mudando a hora de término
+// Updates the event information
+$eventData['subject'] = 'Updated Meeting - Test with Microsoft Graph API';
+$eventData['body']['content'] = 'This event was updated via Microsoft Graph API.';
+$eventData['end']['dateTime'] = '2024-08-26T12:00:00'; // Changing the end time
 
-// Obtém o cliente HTTP com o token já verificado e renovado se necessário
+// Gets the HTTP client with the token already verified and renewed if necessary
 $client = getClient();
 
-// Verifica se o calendarId está presente no JSON
+// Checks if calendarId is present in the JSON
 $calendarId = @$eventData['calendarId'];
 
-// Monta a URL para atualizar o evento com base no calendarId
+// Builds the URL to update the event based on calendarId
 if ($calendarId) {
     $eventEndpoint = "me/calendars/$calendarId/events/" . $eventData['id'];
 } else {
     $eventEndpoint = "me/events/" . $eventData['id'];
 }
 
-// Atualiza o evento no calendário
+// Updates the event in the calendar
 try {
-    // Remove o calendarId do array de dados do evento
+    // Remove calendarId from the event data array
     unset($eventData['calendarId']);
 
     $response = $client->patch($eventEndpoint, [
         'json' => $eventData,
     ]);
 
-    // Recupera as informações atualizadas do evento
+    // Retrieves the updated event information
     $updatedEvent = json_decode($response->getBody(), true);
 
-    // Insere o calendarId de volta no array de dados do evento
+    // Inserts calendarId back into the event data array
     $updatedEvent['calendarId'] = $calendarId;
 
-    // Salva as informações atualizadas de volta no arquivo JSON
+    // Saves the updated information back to the JSON file
     file_put_contents($jsonFile, json_encode($updatedEvent, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    echo "Evento atualizado com sucesso. As informações atualizadas foram salvas em $jsonFile.\n";
+    echo "Event updated successfully. The updated information was saved in $jsonFile.\n";
 
 } catch (\Exception $e) {
-    echo "Erro ao atualizar o evento: " . $e->getMessage() . "\n";
+    echo "Error updating the event: " . $e->getMessage() . "\n";
 }
